@@ -1,0 +1,349 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  MANAGER
+  STAFF
+}
+
+model Account {
+  id                 Int        @id @default(autoincrement())
+  username           String     @unique
+  passwordHash       String
+  role               Role       @default(STAFF)
+  fullName           String
+  isActive           Boolean    @default(true)
+  mustChangePassword Boolean    @default(false)
+  tokenVersion       Int        @default(0)
+  failedPwAttempts   Int        @default(0)
+  lockedUntil        DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  loginLogs          LoginLog[]
+  stockIns           StockIn[]
+  stockOuts          StockOut[]
+  prepBatches        PrepBatch[]
+  stockCounts        StockCount[]
+}
+
+model LoginLog {
+  id        Int      @id @default(autoincrement())
+  accountId Int?
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  username  String
+  success   Boolean
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+  @@index([createdAt])
+}
+
+model CustomerType {
+  id              Int        @id @default(autoincrement())
+  name            String     @unique
+  minPoints       Int        @unique
+  discountPercent Int
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  customers       Customer[]
+}
+
+model Customer {
+  id             Int          @id @default(autoincrement())
+  fullName       String
+  phone          String       @unique
+  address        String?
+  birthday       DateTime?    @db.Date
+  points         Int          @default(0)
+  lifetimePoints Int          @default(0)
+  customerTypeId Int
+  customerType   CustomerType @relation(fields: [customerTypeId], references: [id])
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  pointLogs      PointLog[]
+
+  @@index([fullName])
+  @@index([customerTypeId])
+}
+
+enum PointReason {
+  EARN
+  REDEEM
+  ADJUST
+}
+
+model PointLog {
+  id          Int         @id @default(autoincrement())
+  customerId  Int
+  customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  delta       Int
+  reason      PointReason
+  orderId     Int?
+  note        String?
+  createdById Int?
+  createdAt   DateTime    @default(now())
+
+  @@index([customerId])
+}
+
+model LoyaltySetting {
+  id               Int      @id @default(1)
+  amountPerPoint   Int      @default(10000)
+  pointValue       Int      @default(1000)
+  maxRedeemPercent Int      @default(50)
+  minRedeemPoints  Int      @default(0)
+  isEnabled        Boolean  @default(true)
+  updatedById      Int?
+  updatedAt        DateTime @updatedAt
+}
+
+enum IngredientType {
+  RAW
+  PREPARED
+}
+
+enum StockOutReason {
+  SALE
+  USAGE
+  DISCARD
+  ADJUST
+  PREP
+}
+
+enum LotSource {
+  OPENING
+  STOCK_IN
+  PREP
+  COUNT
+}
+
+model IngredientCategory {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  icon        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ingredients Ingredient[]
+}
+
+model Ingredient {
+  id             Int                 @id @default(autoincrement())
+  name           String              @unique
+  unit           String
+  type           IngredientType      @default(RAW)
+  categoryId     Int?
+  category       IngredientCategory? @relation(fields: [categoryId], references: [id])
+  /// = Σ StockLot.remainingQty
+  quantity       Decimal             @default(0) @db.Decimal(12, 3)
+  minStock       Decimal             @default(0) @db.Decimal(12, 3)
+  avgCost        Decimal             @default(0) @db.Decimal(14, 4)
+  shelfLifeHours Int?
+  /// Sản lượng 1 mẻ, chỉ PREPARED
+  batchYield     Decimal?            @db.Decimal(12, 3)
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  purchaseUnits  PurchaseUnit[]
+  prepItems      PrepRecipeItem[]    @relation("PrepOutput")
+  usedInPreps    PrepRecipeItem[]    @relation("PrepInput")
+  lots           StockLot[]
+  stockInItems   StockInItem[]
+  stockOutItems  StockOutItem[]
+  prepBatches    PrepBatch[]
+  countItems     StockCountItem[]
+
+  @@index([categoryId])
+}
+
+model PurchaseUnit {
+  id           Int        @id @default(autoincrement())
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  name         String
+  factor       Decimal    @db.Decimal(12, 3)
+  isActive     Boolean    @default(true)
+
+  @@unique([ingredientId, name])
+}
+
+model PrepRecipeItem {
+  id           Int        @id @default(autoincrement())
+  preparedId   Int
+  prepared     Ingredient @relation("PrepOutput", fields: [preparedId], references: [id], onDelete: Cascade)
+  ingredientId Int
+  ingredient   Ingredient @relation("PrepInput", fields: [ingredientId], references: [id])
+  quantity     Decimal    @db.Decimal(12, 3)
+
+  @@unique([preparedId, ingredientId])
+}
+
+model StockLot {
+  id            Int                  @id @default(autoincrement())
+  ingredientId  Int
+  ingredient    Ingredient           @relation(fields: [ingredientId], references: [id])
+  source        LotSource
+  stockInItemId Int?                 @unique
+  stockInItem   StockInItem?         @relation(fields: [stockInItemId], references: [id])
+  prepBatchId   Int?                 @unique
+  prepBatch     PrepBatch?           @relation(fields: [prepBatchId], references: [id])
+  countItemId   Int?                 @unique
+  countItem     StockCountItem?      @relation(fields: [countItemId], references: [id])
+  initialQty    Decimal              @db.Decimal(12, 3)
+  remainingQty  Decimal              @db.Decimal(12, 3)
+  unitCost      Decimal              @db.Decimal(14, 4)
+  expiresAt     DateTime?
+  createdAt     DateTime             @default(now())
+  allocations   StockOutAllocation[]
+
+  @@index([ingredientId, remainingQty])
+  @@index([expiresAt])
+}
+
+model Supplier {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  address     String?
+  email       String?
+  phone       String?
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  stockIns    StockIn[]
+}
+
+model StockIn {
+  id          Int           @id @default(autoincrement())
+  code        String        @unique
+  supplierId  Int
+  supplier    Supplier      @relation(fields: [supplierId], references: [id])
+  importDate  DateTime      @db.Date
+  note        String?
+  total       Int
+  createdById Int
+  createdBy   Account       @relation(fields: [createdById], references: [id])
+  createdAt   DateTime      @default(now())
+  items       StockInItem[]
+
+  @@index([importDate])
+}
+
+model StockInItem {
+  id               Int        @id @default(autoincrement())
+  stockInId        Int
+  stockIn          StockIn    @relation(fields: [stockInId], references: [id], onDelete: Cascade)
+  ingredientId     Int
+  ingredient       Ingredient @relation(fields: [ingredientId], references: [id])
+  /// Đơn vị gốc
+  quantity         Decimal    @db.Decimal(12, 3)
+  /// Theo đơn vị gốc
+  unitPrice        Decimal    @db.Decimal(14, 4)
+  purchaseUnitName String?
+  packFactor       Decimal?   @db.Decimal(12, 3)
+  packQty          Decimal?   @db.Decimal(12, 3)
+  packPrice        Decimal?   @db.Decimal(14, 2)
+  expiresAt        DateTime?
+  lot              StockLot?
+
+  @@index([ingredientId])
+}
+
+model StockOut {
+  id           Int            @id @default(autoincrement())
+  code         String         @unique
+  reason       StockOutReason
+  orderId      Int?
+  prepBatchId  Int?           @unique
+  prepBatch    PrepBatch?     @relation(fields: [prepBatchId], references: [id])
+  stockCountId Int?           @unique
+  stockCount   StockCount?    @relation(fields: [stockCountId], references: [id])
+  note         String?
+  createdById  Int?
+  createdBy    Account?       @relation(fields: [createdById], references: [id])
+  createdAt    DateTime       @default(now())
+  items        StockOutItem[]
+
+  @@index([createdAt])
+  @@index([orderId])
+}
+
+model StockOutItem {
+  id           Int                  @id @default(autoincrement())
+  stockOutId   Int
+  stockOut     StockOut             @relation(fields: [stockOutId], references: [id], onDelete: Cascade)
+  ingredientId Int
+  ingredient   Ingredient           @relation(fields: [ingredientId], references: [id])
+  quantity     Decimal              @db.Decimal(12, 3)
+  unitCost     Decimal              @db.Decimal(14, 4)
+  allocations  StockOutAllocation[]
+
+  @@index([ingredientId])
+}
+
+model StockOutAllocation {
+  id             Int          @id @default(autoincrement())
+  stockOutItemId Int
+  stockOutItem   StockOutItem @relation(fields: [stockOutItemId], references: [id], onDelete: Cascade)
+  lotId          Int
+  lot            StockLot     @relation(fields: [lotId], references: [id])
+  quantity       Decimal      @db.Decimal(12, 3)
+
+  @@index([lotId])
+}
+
+model PrepBatch {
+  id          Int        @id @default(autoincrement())
+  code        String     @unique
+  preparedId  Int
+  prepared    Ingredient @relation(fields: [preparedId], references: [id])
+  batches     Decimal    @db.Decimal(8, 2)
+  expectedQty Decimal    @db.Decimal(12, 3)
+  actualQty   Decimal    @db.Decimal(12, 3)
+  totalCost   Decimal    @db.Decimal(14, 2)
+  producedAt  DateTime   @default(now())
+  expiresAt   DateTime
+  note        String?
+  createdById Int
+  createdBy   Account    @relation(fields: [createdById], references: [id])
+  lot         StockLot?
+  stockOut    StockOut?
+
+  @@index([producedAt])
+}
+
+model StockCount {
+  id          Int              @id @default(autoincrement())
+  code        String           @unique
+  note        String?
+  createdById Int
+  createdBy   Account          @relation(fields: [createdById], references: [id])
+  createdAt   DateTime         @default(now())
+  items       StockCountItem[]
+  stockOut    StockOut?
+}
+
+model StockCountItem {
+  id           Int        @id @default(autoincrement())
+  stockCountId Int
+  stockCount   StockCount @relation(fields: [stockCountId], references: [id], onDelete: Cascade)
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  systemQty    Decimal    @db.Decimal(12, 3)
+  actualQty    Decimal    @db.Decimal(12, 3)
+  diff         Decimal    @db.Decimal(12, 3)
+  unitCost     Decimal    @db.Decimal(14, 4)
+  lot          StockLot?
+
+  @@unique([stockCountId, ingredientId])
+}
