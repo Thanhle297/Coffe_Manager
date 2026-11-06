@@ -1,0 +1,394 @@
+.dash {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ---------- Banner ---------- */
+.dash-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 32px;
+  color: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(164, 117, 81, 0.5), transparent 45%),
+    linear-gradient(155deg, #2f1f15 0%, #4b3426 50%, #6f4e37 100%);
+  box-shadow: 0 12px 28px rgba(62, 42, 30, 0.16);
+}
+.dash-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+.dash-banner > * {
+  position: relative;
+}
+.dash-date {
+  display: inline-block;
+  padding: 3px 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  text-transform: capitalize;
+  color: #f5ede4;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+.dash-banner h1 {
+  margin: 0 0 4px;
+  font-size: 28px;
+  line-height: 1.25;
+  color: #fff;
+}
+.dash-banner h1 em {
+  font-style: normal;
+  color: #e0b98f;
+}
+.dash-banner p {
+  margin: 0;
+  color: #e6d9cc;
+}
+
+/* Phiếu ca làm kiểu hóa đơn */
+.dash-ticket {
+  position: relative;
+  flex: none;
+  width: 240px;
+  margin-bottom: 10px;
+  padding: 18px 20px 22px;
+  color: #3e2a1e;
+  background: #fff;
+  border-radius: 6px 6px 0 0;
+  transform: rotate(1.2deg);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
+}
+.dash-ticket::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  height: 10px;
+  background:
+    linear-gradient(135deg, #fff 50%, transparent 50%) 0 0 / 14px 10px,
+    linear-gradient(225deg, #fff 50%, transparent 50%) 0 0 / 14px 10px;
+}
+.dash-ticket > b {
+  display: block;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 3px;
+  border-bottom: 2px dashed #e6d9cc;
+}
+.dash-ticket-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 13px;
+}
+.dash-ticket-row span {
+  color: #6b5a4c;
+}
+.dash-ticket-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 7px 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: #3e2a1e;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.dash-ticket-btn:hover {
+  background: #6f4e37;
+}
+
+/* ---------- KPI ---------- */
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.dash-stat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  font: inherit;
+  text-align: left;
+  color: #3e2a1e;
+  background: #fff;
+  border: 1px solid #efe5da;
+  border-radius: 14px;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.dash-stat:disabled {
+  cursor: default;
+}
+.dash-stat:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(62, 42, 30, 0.1);
+}
+.dash-stat:focus-visible,
+.dash-shortcut:focus-visible,
+.dash-link:focus-visible {
+  outline: 2px solid #a47551;
+  outline-offset: 2px;
+}
+.dash-stat-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  font-size: 21px;
+  color: #fff;
+  background: linear-gradient(135deg, #a47551, #6f4e37);
+  border-radius: 12px;
+}
+.tone-warn .dash-stat-icon {
+  background: linear-gradient(135deg, #d9622b, #b4380a);
+}
+.tone-ok .dash-stat-icon {
+  background: linear-gradient(135deg, #4c9a50, #2f7d32);
+}
+.dash-stat-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.dash-stat-label {
+  font-size: 13px;
+  color: #6b5a4c;
+}
+.dash-stat-body strong {
+  font-size: 24px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+.tone-warn .dash-stat-body strong {
+  color: #b4380a;
+}
+.dash-stat-hint {
+  font-size: 12px;
+  color: #6b5a4c;
+}
+
+/* ---------- Panels ---------- */
+.dash-cols {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+.span-main {
+  grid-column: span 7;
+}
+.span-side {
+  grid-column: span 5;
+}
+.span-half {
+  grid-column: span 6;
+}
+.dash-panel {
+  min-width: 0;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid #efe5da;
+  border-radius: 14px;
+}
+.dash-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.dash-panel h3 {
+  margin: 0;
+  font-size: 15px;
+  color: #3e2a1e;
+}
+.dash-chart {
+  height: 260px;
+}
+.dash-link {
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6f4e37;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.dash-link:hover {
+  text-decoration: underline;
+}
+.dash-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 28px 0;
+  justify-content: center;
+  color: #6b5a4c;
+}
+.dash-empty .anticon {
+  color: #2f7d32;
+}
+
+.dash-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dash-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px dashed #efe5da;
+}
+.dash-list li:first-child {
+  border-top: 0;
+}
+.dash-list-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.dash-list-main b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.dash-list-main small {
+  font-size: 12px;
+  color: #6b5a4c;
+}
+.dash-tags {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.dash-tags .ant-tag {
+  margin-inline-end: 0;
+}
+.dash-amount {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Shortcuts ---------- */
+.dash-section {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 28px 0 12px;
+  font-size: 16px;
+  color: #3e2a1e;
+}
+.dash-section small {
+  font-size: 13px;
+  font-weight: 400;
+  color: #6b5a4c;
+}
+.dash-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+}
+.dash-shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3e2a1e;
+  background: #fff;
+  border: 1px solid #efe5da;
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+.dash-shortcut:hover:not(.is-soon) {
+  transform: translateY(-2px);
+  border-color: #d9c3ab;
+}
+.dash-shortcut-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  font-size: 18px;
+  color: #fff;
+  background: linear-gradient(135deg, #a47551, #6f4e37);
+  border-radius: 10px;
+}
+.dash-shortcut small {
+  font-size: 11px;
+  font-weight: 400;
+  color: #6b5a4c;
+}
+.dash-shortcut.is-soon {
+  cursor: default;
+  background: #fdfaf7;
+}
+.dash-shortcut.is-soon .dash-shortcut-icon {
+  background: #e6d9cc;
+  color: #6b5a4c;
+}
+
+@media (max-width: 960px) {
+  .span-main,
+  .span-side,
+  .span-half {
+    grid-column: span 12;
+  }
+}
+@media (max-width: 760px) {
+  .dash-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 22px 22px;
+  }
+  .dash-banner h1 {
+    font-size: 24px;
+  }
+  .dash-ticket {
+    width: 100%;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash-stat,
+  .dash-shortcut,
+  .dash-ticket-btn {
+    transition: none !important;
+  }
+}
