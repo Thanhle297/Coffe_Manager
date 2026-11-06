@@ -1,0 +1,45 @@
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { ProtectedRoute } from './auth/ProtectedRoute';
+import { AppLayout } from './layouts/AppLayout';
+import AccountsPage from './pages/AccountsPage';
+import ChangePasswordPage from './pages/ChangePasswordPage';
+import CustomersPage from './pages/CustomersPage';
+import HomePage from './pages/HomePage';
+import IngredientCategoriesPage from './pages/IngredientCategoriesPage';
+import IngredientsPage from './pages/IngredientsPage';
+import LoginPage from './pages/LoginPage';
+import LoyaltyPage from './pages/LoyaltyPage';
+import PrepPage from './pages/PrepPage';
+import StockCountPage from './pages/StockCountPage';
+import StockInPage from './pages/StockInPage';
+import StockOutPage from './pages/StockOutPage';
+import SuppliersPage from './pages/SuppliersPage';
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="change-password" element={<ChangePasswordPage />} />
+          <Route path="customers" element={<CustomersPage />} />
+          <Route path="ingredients" element={<IngredientsPage />} />
+          <Route path="ingredient-categories" element={<IngredientCategoriesPage />} />
+          <Route path="suppliers" element={<SuppliersPage />} />
+          <Route path="stock-in" element={<StockInPage />} />
+          <Route path="stock-out" element={<StockOutPage />} />
+          <Route path="prep" element={<PrepPage />} />
+          <Route path="stock-counts" element={<StockCountPage />} />
+          <Route element={<ProtectedRoute roles={['MANAGER']} />}>
+            <Route path="accounts" element={<AccountsPage />} />
+            <Route path="loyalty" element={<LoyaltyPage />} />
+          </Route>
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
