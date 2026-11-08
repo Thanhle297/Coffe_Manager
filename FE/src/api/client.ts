@@ -40,3 +40,15 @@ export function getErrorMessage(error: unknown, fallback = 'Có lỗi xảy ra, 
   }
   return fallback;
 }
+
+/** Tải hết mọi trang của một API phân trang (API giới hạn tối đa 100 dòng mỗi trang). */
+export async function fetchAllPages<T>(fetchPage: (page: number) => Promise<{ items: T[]; total: number }>) {
+  const first = await fetchPage(1);
+  const items = [...first.items];
+  for (let page = 2; items.length < first.total; page++) {
+    const next = await fetchPage(page);
+    if (next.items.length === 0) break;
+    items.push(...next.items);
+  }
+  return items;
+}

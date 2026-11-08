@@ -5,6 +5,9 @@ import { Avatar, Badge, Button, Dropdown, Flex, Layout, Menu, Tag, Typography } 
 import type { MenuProps } from 'antd';
 import {
   AppstoreOutlined,
+  BookOutlined,
+  TagsOutlined,
+  PlusSquareOutlined,
   AuditOutlined,
   CoffeeOutlined,
   FireOutlined,
@@ -41,6 +44,16 @@ const navItems: NavItem[] = [
   { key: '/', label: 'Trang chủ', icon: <HomeOutlined /> },
   { key: '/customers', label: 'Khách hàng', icon: <ContactsOutlined /> },
   {
+    key: 'menu',
+    label: 'Thực đơn',
+    icon: <BookOutlined />,
+    children: [
+      { key: '/drinks', label: 'Đồ uống', icon: <CoffeeOutlined /> },
+      { key: '/toppings', label: 'Topping', icon: <PlusSquareOutlined /> },
+      { key: '/drink-categories', label: 'Danh mục', icon: <TagsOutlined /> },
+    ],
+  },
+  {
     key: 'inventory',
     label: 'Kho',
     icon: <DatabaseOutlined />,
@@ -61,6 +74,9 @@ const navItems: NavItem[] = [
 const pageTitles: Record<string, string> = {
   '/': 'Trang chủ',
   '/customers': 'Khách hàng',
+  '/drinks': 'Đồ uống',
+  '/toppings': 'Topping',
+  '/drink-categories': 'Danh mục đồ uống',
   '/ingredients': 'Nguyên liệu',
   '/ingredient-categories': 'Loại nguyên liệu',
   '/suppliers': 'Nhà cung cấp',

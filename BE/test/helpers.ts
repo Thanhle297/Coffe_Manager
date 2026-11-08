@@ -16,6 +16,9 @@ export async function resetDb() {
   await prisma.prepBatch.deleteMany();
   await prisma.stockInItem.deleteMany();
   await prisma.stockIn.deleteMany();
+  await prisma.drink.deleteMany();
+  await prisma.topping.deleteMany();
+  await prisma.drinkCategory.deleteMany();
   await prisma.prepRecipeItem.deleteMany();
   await prisma.purchaseUnit.deleteMany();
   await prisma.ingredient.deleteMany();

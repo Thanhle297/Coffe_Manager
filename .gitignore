@@ -9,6 +9,7 @@ build/
 
 # ===== Prisma generated client =====
 BE/src/generated/
+BE/uploads/
 
 # ===== Environment variables (giữ lại file .env.example) =====
 .env

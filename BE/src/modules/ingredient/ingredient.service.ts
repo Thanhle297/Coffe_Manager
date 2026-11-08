@@ -145,7 +145,7 @@ export async function updateIngredient(id: number, input: UpdateIngredientInput)
   }
 }
 
-/** Xóa cứng nếu chưa phát sinh phiếu, lô hoặc định mức; ngược lại chỉ ẩn đi. */
+/** Xóa cứng nếu chưa phát sinh phiếu, lô, định mức hoặc công thức đồ uống; ngược lại chỉ ẩn đi. */
 export async function removeIngredient(id: number) {
   await getOrThrow(id);
   const counts = await Promise.all([
@@ -155,7 +155,8 @@ export async function removeIngredient(id: number) {
     prisma.prepRecipeItem.count({ where: { ingredientId: id } }),
     prisma.prepBatch.count({ where: { preparedId: id } }),
     prisma.stockCountItem.count({ where: { ingredientId: id } }),
-    // TODO(Drink): thêm recipe.count({ where: { ingredientId: id } }) khi có bảng Recipe.
+    prisma.drinkRecipeItem.count({ where: { ingredientId: id } }),
+    prisma.toppingRecipeItem.count({ where: { ingredientId: id } }),
   ]);
   if (counts.some((c) => c > 0)) {
     await prisma.ingredient.update({ where: { id }, data: { isActive: false } });

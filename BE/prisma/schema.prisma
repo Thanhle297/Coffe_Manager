@@ -162,6 +162,8 @@ model Ingredient {
   stockOutItems  StockOutItem[]
   prepBatches    PrepBatch[]
   countItems     StockCountItem[]
+  drinkRecipes   DrinkRecipeItem[]
+  toppingRecipes ToppingRecipeItem[]
 
   @@index([categoryId])
 }
@@ -346,4 +348,92 @@ model StockCountItem {
   lot          StockLot?
 
   @@unique([stockCountId, ingredientId])
+}
+
+// ===== Đồ uống và thực đơn =====
+
+model DrinkCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  drinks    Drink[]
+}
+
+model Drink {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  categoryId  Int?
+  category    DrinkCategory? @relation(fields: [categoryId], references: [id])
+  imageUrl    String?
+  description String?
+  /// Bật/tắt bán; chỉ bật được khi mọi size đang dùng có công thức
+  isAvailable Boolean        @default(false)
+  /// false = đã gỡ khỏi thực đơn (thay cho xóa khi đã có trong hóa đơn)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  sizes       DrinkSize[]
+  toppings    DrinkTopping[]
+
+  @@index([categoryId])
+}
+
+model DrinkSize {
+  id        Int               @id @default(autoincrement())
+  drinkId   Int
+  drink     Drink             @relation(fields: [drinkId], references: [id], onDelete: Cascade)
+  name      String
+  price     Int
+  sortOrder Int               @default(0)
+  isDefault Boolean           @default(false)
+  isActive  Boolean           @default(true)
+  recipe    DrinkRecipeItem[]
+
+  @@unique([drinkId, name])
+}
+
+model DrinkRecipeItem {
+  sizeId       Int
+  size         DrinkSize  @relation(fields: [sizeId], references: [id], onDelete: Cascade)
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  quantity     Decimal    @db.Decimal(12, 3)
+
+  @@id([sizeId, ingredientId])
+  @@index([ingredientId])
+}
+
+model Topping {
+  id          Int                 @id @default(autoincrement())
+  name        String              @unique
+  price       Int
+  isAvailable Boolean             @default(true)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  recipe      ToppingRecipeItem[]
+  drinks      DrinkTopping[]
+}
+
+model ToppingRecipeItem {
+  toppingId    Int
+  topping      Topping    @relation(fields: [toppingId], references: [id], onDelete: Cascade)
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  quantity     Decimal    @db.Decimal(12, 3)
+
+  @@id([toppingId, ingredientId])
+  @@index([ingredientId])
+}
+
+model DrinkTopping {
+  drinkId   Int
+  drink     Drink   @relation(fields: [drinkId], references: [id], onDelete: Cascade)
+  toppingId Int
+  topping   Topping @relation(fields: [toppingId], references: [id], onDelete: Cascade)
+
+  @@id([drinkId, toppingId])
+  @@index([toppingId])
 }
