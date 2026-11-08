@@ -163,9 +163,83 @@ async function seedInventory() {
   await seedLotsAndPrep(categoryId);
 }
 
+const DRINK_CATEGORIES = ['Cà phê', 'Trà', 'Trà sữa'];
+
+type SeedSize = [name: string, price: number, recipe: [string, number][]];
+/** Món mẫu: công thức khớp nguyên liệu đã seed. Size đầu tiên là mặc định. */
+const DRINKS: { name: string; category: string; sizes: SeedSize[]; toppings?: string[] }[] = [
+  {
+    name: 'Cà phê đen',
+    category: 'Cà phê',
+    sizes: [
+      ['S', 25000, [['Cốt cà phê phin', 30], ['Siro đường', 10], ['Ly nhựa', 1]]],
+      ['M', 29000, [['Cốt cà phê phin', 40], ['Siro đường', 15], ['Ly nhựa', 1]]],
+      ['L', 35000, [['Cốt cà phê phin', 50], ['Siro đường', 20], ['Ly nhựa', 1]]],
+    ],
+  },
+  {
+    name: 'Cà phê sữa',
+    category: 'Cà phê',
+    sizes: [
+      ['S', 29000, [['Cốt cà phê phin', 30], ['Sữa đặc', 0.08], ['Ly nhựa', 1]]],
+      ['M', 35000, [['Cốt cà phê phin', 40], ['Sữa đặc', 0.1], ['Ly nhựa', 1]]],
+    ],
+  },
+  {
+    name: 'Trà đen',
+    category: 'Trà',
+    sizes: [['Tiêu chuẩn', 25000, [['Trà đen ủ', 200], ['Siro đường', 20], ['Ly nhựa', 1]]]],
+    toppings: ['Trân châu đen'],
+  },
+  {
+    name: 'Trà sữa trân châu',
+    category: 'Trà sữa',
+    sizes: [
+      ['M', 35000, [['Trà đen ủ', 150], ['Sữa tươi', 0.1], ['Siro đường', 20], ['Trân châu đen', 40], ['Ly nhựa', 1]]],
+      ['L', 42000, [['Trà đen ủ', 200], ['Sữa tươi', 0.15], ['Siro đường', 25], ['Trân châu đen', 50], ['Ly nhựa', 1]]],
+    ],
+    toppings: ['Trân châu đen'],
+  },
+];
+
+async function seedDrinks() {
+  if ((await prisma.drinkCategory.count()) > 0 || (await prisma.drink.count()) > 0) return;
+  const ing = new Map((await prisma.ingredient.findMany()).map((i) => [i.name, i.id] as const));
+  const recipe = (items: [string, number][]) =>
+    items.filter(([n]) => ing.has(n)).map(([n, quantity]) => ({ ingredientId: ing.get(n)!, quantity }));
+
+  await prisma.drinkCategory.createMany({ data: DRINK_CATEGORIES.map((name, sortOrder) => ({ name, sortOrder })) });
+  const cat = new Map((await prisma.drinkCategory.findMany()).map((c) => [c.name, c.id] as const));
+
+  const topping = await prisma.topping.create({
+    data: { name: 'Trân châu đen', price: 8000, recipe: { create: recipe([['Trân châu đen', 50]]) } },
+  });
+  for (const d of DRINKS) {
+    await prisma.drink.create({
+      data: {
+        name: d.name,
+        categoryId: cat.get(d.category),
+        isAvailable: true,
+        sizes: {
+          create: d.sizes.map(([name, price, items], i) => ({
+            name,
+            price,
+            sortOrder: i,
+            isDefault: i === 0,
+            recipe: { create: recipe(items) },
+          })),
+        },
+        toppings: { create: (d.toppings ?? []).map(() => ({ toppingId: topping.id })) },
+      },
+    });
+  }
+  console.log(`Đã tạo ${DRINK_CATEGORIES.length} danh mục, 1 topping và ${DRINKS.length} đồ uống mẫu.`);
+}
+
 async function main() {
   await seedLoyalty();
   await seedInventory();
+  await seedDrinks();
 
   const existing = await prisma.account.count({ where: { role: Role.MANAGER } });
   if (existing > 0) {

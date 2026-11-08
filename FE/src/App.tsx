@@ -4,6 +4,8 @@ import { AppLayout } from './layouts/AppLayout';
 import AccountsPage from './pages/AccountsPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import CustomersPage from './pages/CustomersPage';
+import DrinkCategoriesPage from './pages/DrinkCategoriesPage';
+import DrinksPage from './pages/DrinksPage';
 import HomePage from './pages/HomePage';
 import IngredientCategoriesPage from './pages/IngredientCategoriesPage';
 import IngredientsPage from './pages/IngredientsPage';
@@ -14,6 +16,7 @@ import StockCountPage from './pages/StockCountPage';
 import StockInPage from './pages/StockInPage';
 import StockOutPage from './pages/StockOutPage';
 import SuppliersPage from './pages/SuppliersPage';
+import ToppingsPage from './pages/ToppingsPage';
 
 export default function App() {
   return (
@@ -25,6 +28,9 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
           <Route path="customers" element={<CustomersPage />} />
+          <Route path="drinks" element={<DrinksPage />} />
+          <Route path="toppings" element={<ToppingsPage />} />
+          <Route path="drink-categories" element={<DrinkCategoriesPage />} />
           <Route path="ingredients" element={<IngredientsPage />} />
           <Route path="ingredient-categories" element={<IngredientCategoriesPage />} />
           <Route path="suppliers" element={<SuppliersPage />} />

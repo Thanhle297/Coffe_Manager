@@ -6,6 +6,8 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import { accountRoutes } from './modules/account/account.routes.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { customerRoutes } from './modules/customer/customer.routes.js';
+import { drinkCategoryRoutes } from './modules/drink-category/drinkCategory.routes.js';
+import { drinkRoutes } from './modules/drink/drink.routes.js';
 import { customerTypeRoutes } from './modules/customer-type/customerType.routes.js';
 import { ingredientCategoryRoutes } from './modules/ingredient-category/ingredientCategory.routes.js';
 import { ingredientRoutes } from './modules/ingredient/ingredient.routes.js';
@@ -14,13 +16,18 @@ import { prepRoutes } from './modules/prep/prep.routes.js';
 import { stockCountRoutes } from './modules/stock-count/stockCount.routes.js';
 import { stockInRoutes, stockOutRoutes } from './modules/stock/stock.routes.js';
 import { supplierRoutes } from './modules/supplier/supplier.routes.js';
+import { toppingRoutes } from './modules/topping/topping.routes.js';
+import { UPLOAD_ROOT } from './middlewares/upload.js';
 
 export const app = express();
 
-app.use(helmet());
+// Cho phép FE khác cổng tải ảnh từ /uploads.
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: process.env.CORS_ORIGIN }));
 app.use(express.json());
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
+
+app.use('/uploads', express.static(UPLOAD_ROOT));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
@@ -38,5 +45,8 @@ app.use('/stock-in', stockInRoutes);
 app.use('/stock-out', stockOutRoutes);
 app.use('/prep-batches', prepRoutes);
 app.use('/stock-counts', stockCountRoutes);
+app.use('/drink-categories', drinkCategoryRoutes);
+app.use('/drinks', drinkRoutes);
+app.use('/toppings', toppingRoutes);
 
 app.use(errorHandler);
