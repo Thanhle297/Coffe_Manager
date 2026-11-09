@@ -1,5 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './auth/ProtectedRoute';
+import AttendancePage from './pages/AttendancePage';
+import EmployeesPage from './pages/EmployeesPage';
+import PayrollPage from './pages/PayrollPage';
+import ShiftsPage from './pages/ShiftsPage';
 import { AppLayout } from './layouts/AppLayout';
 import AccountsPage from './pages/AccountsPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
@@ -49,6 +53,10 @@ export default function App() {
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="tables/manage" element={<ManageTablesPage />} />
             <Route path="loyalty" element={<LoyaltyPage />} />
+            <Route path="employees" element={<EmployeesPage />} />
+            <Route path="shifts" element={<ShiftsPage />} />
+            <Route path="attendances" element={<AttendancePage />} />
+            <Route path="payrolls" element={<PayrollPage />} />
           </Route>
         </Route>
       </Route>

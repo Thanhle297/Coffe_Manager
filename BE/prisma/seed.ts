@@ -248,11 +248,35 @@ async function seedTables() {
   console.log('Đã có 10 bàn mẫu.');
 }
 
+async function seedStaff() {
+  const shifts = [
+    { name: 'Ca sáng', startTime: '06:00', endTime: '12:00', pay: 150_000 },
+    { name: 'Ca chiều', startTime: '12:00', endTime: '18:00', pay: 150_000 },
+    { name: 'Ca tối', startTime: '18:00', endTime: '23:00', pay: 140_000 },
+  ];
+  for (const s of shifts) await prisma.shift.upsert({ where: { name: s.name }, update: {}, create: s });
+
+  const employees = [
+    { code: 'NV001', fullName: 'Nguyễn Văn An', gender: 'MALE', position: 'Pha chế', phone: '0901000001' },
+    { code: 'NV002', fullName: 'Trần Thị Bình', gender: 'FEMALE', position: 'Thu ngân', phone: '0901000002' },
+    { code: 'NV003', fullName: 'Lê Minh Châu', gender: 'FEMALE', position: 'Phục vụ', phone: '0901000003' },
+  ] as const;
+  for (const e of employees) {
+    await prisma.employee.upsert({
+      where: { code: e.code },
+      update: {},
+      create: { ...e, hireDate: new Date('2026-01-01T00:00:00.000Z') },
+    });
+  }
+  console.log('Đã có 3 ca và 3 nhân viên mẫu.');
+}
+
 async function main() {
   await seedLoyalty();
   await seedInventory();
   await seedDrinks();
   await seedTables();
+  await seedStaff();
 
   const existing = await prisma.account.count({ where: { role: Role.MANAGER } });
   if (existing > 0) {
