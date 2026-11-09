@@ -18,7 +18,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { ArrowLeftOutlined, DeleteOutlined, PrinterOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, DeleteOutlined, PrinterOutlined, UserAddOutlined } from '@ant-design/icons';
 import { getErrorMessage } from '../api/client';
 import { listCustomers } from '../api/customers';
 import type { MenuDrink } from '../api/drinks';
@@ -37,6 +37,7 @@ import {
 import DrinkOptionModal, { type DrinkSelection } from '../components/DrinkOptionModal';
 import DrinkPicker from '../components/DrinkPicker';
 import PayModal from '../components/PayModal';
+import QuickCustomerModal from '../components/QuickCustomerModal';
 import { ReceiptView } from '../components/ReceiptView';
 import { colors } from '../theme';
 import { fmtDateTime, fmtMoney } from '../utils/format';
@@ -62,6 +63,7 @@ export default function OrderPage() {
   const queryClient = useQueryClient();
   const [picking, setPicking] = useState<MenuDrink | null>(null);
   const [paying, setPaying] = useState(false);
+  const [addingCustomer, setAddingCustomer] = useState(false);
 
   const { data: order, isLoading, error } = useQuery({ queryKey: ['order', id], queryFn: () => getOrder(id) });
 
@@ -163,7 +165,9 @@ export default function OrderPage() {
         <Col xs={24} lg={9}>
           <Card size="small" title={`Đơn hàng (${order.itemCount} ly)`} style={{ position: 'sticky', top: 16 }}>
             <Flex vertical gap={12}>
+              <Flex gap={8}>
               <Select
+                style={{ flex: 1, minWidth: 0 }}
                 showSearch
                 allowClear
                 filterOption={false}
@@ -180,6 +184,18 @@ export default function OrderPage() {
                     .filter((c) => c.id !== order.customer?.id)
                     .map((c) => ({ value: c.id, label: `${c.fullName} · ${c.phone}` })),
                 ]}
+              />
+                <Button icon={<UserAddOutlined />} title="Thêm khách mới" onClick={() => setAddingCustomer(true)} />
+              </Flex>
+              <QuickCustomerModal
+                open={addingCustomer}
+                initialText={customerQ}
+                onClose={() => setAddingCustomer(false)}
+                onCreated={(c) => {
+                  setAddingCustomer(false);
+                  setCustomerQ('');
+                  customerMutation.mutate(c.id);
+                }}
               />
               {order.customer && (
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>
