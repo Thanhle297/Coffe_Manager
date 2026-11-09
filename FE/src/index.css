@@ -10,3 +10,46 @@ body {
   color: #3e2a1e;
   -webkit-font-smoothing: antialiased;
 }
+
+/* In hóa đơn khổ 80mm: chỉ hiện vùng .receipt-print */
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 3mm;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .receipt-print,
+  .receipt-print * {
+    visibility: visible;
+  }
+  .receipt-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 74mm;
+  }
+}
+
+/* Thanh cuộn sidebar: mảnh, trong suốt, chỉ hiện khi rê chuột vào. */
+.app-sider {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.app-sider:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+.app-sider::-webkit-scrollbar {
+  width: 6px;
+}
+.app-sider::-webkit-scrollbar-track {
+  background: transparent;
+}
+.app-sider::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+.app-sider:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+}

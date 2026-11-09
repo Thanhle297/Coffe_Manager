@@ -32,6 +32,7 @@ model Account {
   stockOuts          StockOut[]
   prepBatches        PrepBatch[]
   stockCounts        StockCount[]
+  orders             Order[]
 }
 
 model LoginLog {
@@ -72,6 +73,7 @@ model Customer {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   pointLogs      PointLog[]
+  orders         Order[]
 
   @@index([fullName])
   @@index([customerTypeId])
@@ -376,6 +378,7 @@ model Drink {
   updatedAt   DateTime       @updatedAt
   sizes       DrinkSize[]
   toppings    DrinkTopping[]
+  orderItems  OrderItem[]
 
   @@index([categoryId])
 }
@@ -389,7 +392,8 @@ model DrinkSize {
   sortOrder Int               @default(0)
   isDefault Boolean           @default(false)
   isActive  Boolean           @default(true)
-  recipe    DrinkRecipeItem[]
+  recipe     DrinkRecipeItem[]
+  orderItems OrderItem[]
 
   @@unique([drinkId, name])
 }
@@ -415,6 +419,7 @@ model Topping {
   updatedAt   DateTime            @updatedAt
   recipe      ToppingRecipeItem[]
   drinks      DrinkTopping[]
+  orderItems  OrderItemTopping[]
 }
 
 model ToppingRecipeItem {
@@ -435,5 +440,115 @@ model DrinkTopping {
   topping   Topping @relation(fields: [toppingId], references: [id], onDelete: Cascade)
 
   @@id([drinkId, toppingId])
+  @@index([toppingId])
+}
+
+// ===== Bàn và đặt hàng =====
+
+enum TableStatus {
+  AVAILABLE
+  SELECTING
+  OCCUPIED
+}
+
+enum OrderStatus {
+  OPEN
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+}
+
+model DiningTable {
+  id        Int         @id @default(autoincrement())
+  name      String      @unique
+  /// Tầng đặt bàn (1 = tầng trệt/tầng 1)
+  floor     Int         @default(1)
+  seats     Int?
+  status    TableStatus @default(AVAILABLE)
+  sortOrder Int         @default(0)
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  orders    Order[]
+
+  @@index([floor])
+}
+
+/// Một bàn chỉ có một đơn OPEN: partial unique index `one_open_order_per_table` (migration SQL).
+model Order {
+  id              Int            @id @default(autoincrement())
+  /// HD-YYYYMMDD-0001
+  code            String         @unique
+  tableId         Int
+  table           DiningTable    @relation(fields: [tableId], references: [id])
+  staffId         Int
+  staff           Account        @relation(fields: [staffId], references: [id])
+  customerId      Int?
+  customer        Customer?      @relation(fields: [customerId], references: [id])
+  status          OrderStatus    @default(OPEN)
+  paymentMethod   PaymentMethod?
+  subtotal        Int            @default(0)
+  discountPercent Int            @default(0)
+  discountAmount  Int            @default(0)
+  pointsRedeemed  Int            @default(0)
+  redeemAmount    Int            @default(0)
+  total           Int            @default(0)
+  pointsEarned    Int            @default(0)
+  note            String?
+  createdAt       DateTime       @default(now())
+  paidAt          DateTime?
+  cancelledAt     DateTime?
+  items           OrderItem[]
+
+  @@index([tableId, status])
+  @@index([createdAt])
+  @@index([paidAt])
+  @@index([customerId])
+  @@index([staffId])
+}
+
+model OrderItem {
+  id        Int                @id @default(autoincrement())
+  orderId   Int
+  order     Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  drinkId   Int
+  drink     Drink              @relation(fields: [drinkId], references: [id])
+  sizeId    Int
+  size      DrinkSize          @relation(fields: [sizeId], references: [id])
+  /// Tên chụp lại tại lúc bán
+  drinkName String
+  sizeName  String
+  quantity  Int
+  /// Giá 1 ly = giá size + Σ giá topping × số phần
+  unitPrice Int
+  unitCost  Decimal            @db.Decimal(14, 4)
+  /// Mức đường, đá
+  note      String?
+  createdAt DateTime           @default(now())
+  toppings  OrderItemTopping[]
+
+  @@index([orderId])
+  @@index([drinkId])
+  @@index([sizeId])
+}
+
+model OrderItemTopping {
+  id          Int       @id @default(autoincrement())
+  orderItemId Int
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  toppingId   Int
+  topping     Topping   @relation(fields: [toppingId], references: [id])
+  name        String
+  /// Giá 1 phần
+  price       Int
+  unitCost    Decimal   @db.Decimal(14, 4)
+  /// Số phần trên 1 ly
+  quantity    Int
+
+  @@unique([orderItemId, toppingId])
   @@index([toppingId])
 }

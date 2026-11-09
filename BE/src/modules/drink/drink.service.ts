@@ -264,8 +264,15 @@ async function writeSizes(tx: Tx, drinkId: number, sizes: SizeInput[]) {
 
   const keep = new Set(resolved.flatMap((s) => (s.id ? [s.id] : [])));
   const removed = existing.filter((s) => s.isActive && !keep.has(s.id)).map((s) => s.id);
-  // TODO(Order): size đã có trong OrderItem thì chuyển isActive=false thay vì xóa cứng.
-  if (removed.length > 0) await tx.drinkSize.deleteMany({ where: { id: { in: removed } } });
+  // Size đã có trong hóa đơn thì chỉ gỡ (isActive=false), chưa bán thì xóa cứng.
+  if (removed.length > 0) {
+    const sold = await tx.orderItem.findMany({ where: { sizeId: { in: removed } }, distinct: ['sizeId'], select: { sizeId: true } });
+    const soldIds = sold.map((s) => s.sizeId);
+    if (soldIds.length > 0) {
+      await tx.drinkSize.updateMany({ where: { id: { in: soldIds } }, data: { isActive: false, isDefault: false } });
+    }
+    await tx.drinkSize.deleteMany({ where: { id: { in: removed.filter((id) => !soldIds.includes(id)) } } });
+  }
 
   // Đặt tên tạm trước để đổi chéo tên (S <-> M) không vướng unique.
   for (const s of resolved) {
@@ -322,11 +329,14 @@ export async function setDrinkImage(id: number, filename: string, role: Role) {
 }
 
 /**
- * Xóa món. Đã có trong hóa đơn thì chỉ gỡ (isActive=false, isAvailable=false).
- * TODO(Order): đếm OrderItem để chọn xóa mềm; hiện chưa có hóa đơn nên luôn xóa cứng.
+ * Xóa món. Đã có trong hóa đơn thì chỉ gỡ (isActive=false, isAvailable=false), giữ ảnh.
  */
 export async function removeDrink(id: number) {
   const drink = await getOrThrow(id);
+  if ((await prisma.orderItem.count({ where: { drinkId: id } })) > 0) {
+    await prisma.drink.update({ where: { id }, data: { isActive: false, isAvailable: false } });
+    return;
+  }
   await prisma.drink.delete({ where: { id } });
   await removeUploaded(drink.imageUrl);
 }

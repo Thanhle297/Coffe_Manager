@@ -11,11 +11,15 @@ import IngredientCategoriesPage from './pages/IngredientCategoriesPage';
 import IngredientsPage from './pages/IngredientsPage';
 import LoginPage from './pages/LoginPage';
 import LoyaltyPage from './pages/LoyaltyPage';
+import ManageTablesPage from './pages/ManageTablesPage';
+import OrderPage from './pages/OrderPage';
+import OrdersHistoryPage from './pages/OrdersHistoryPage';
 import PrepPage from './pages/PrepPage';
 import StockCountPage from './pages/StockCountPage';
 import StockInPage from './pages/StockInPage';
 import StockOutPage from './pages/StockOutPage';
 import SuppliersPage from './pages/SuppliersPage';
+import TablesPage from './pages/TablesPage';
 import ToppingsPage from './pages/ToppingsPage';
 
 export default function App() {
@@ -27,6 +31,9 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
+          <Route path="tables" element={<TablesPage />} />
+          <Route path="orders" element={<OrdersHistoryPage />} />
+          <Route path="orders/:id" element={<OrderPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="drinks" element={<DrinksPage />} />
           <Route path="toppings" element={<ToppingsPage />} />
@@ -40,6 +47,7 @@ export default function App() {
           <Route path="stock-counts" element={<StockCountPage />} />
           <Route element={<ProtectedRoute roles={['MANAGER']} />}>
             <Route path="accounts" element={<AccountsPage />} />
+            <Route path="tables/manage" element={<ManageTablesPage />} />
             <Route path="loyalty" element={<LoyaltyPage />} />
           </Route>
         </Route>

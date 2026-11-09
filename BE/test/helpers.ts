@@ -7,6 +7,8 @@ import { prisma } from '../src/lib/prisma.js';
 export const api = () => request(app);
 
 export async function resetDb() {
+  await prisma.order.deleteMany();
+  await prisma.diningTable.deleteMany();
   await prisma.stockOutAllocation.deleteMany();
   await prisma.stockOutItem.deleteMany();
   await prisma.stockOut.deleteMany();
