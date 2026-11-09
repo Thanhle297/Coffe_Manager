@@ -8,6 +8,7 @@ import {
   BookOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
+  BarChartOutlined,
   DollarOutlined,
   IdcardOutlined,
   TagsOutlined,
@@ -97,6 +98,7 @@ const navItems: NavItem[] = [
       { key: '/payrolls', label: 'Bảng lương', icon: <DollarOutlined /> },
     ],
   },
+  { key: '/reports', label: 'Báo cáo', icon: <BarChartOutlined />, roles: ['MANAGER'] },
   { key: '/loyalty', label: 'Ưu đãi khách hàng', icon: <GiftOutlined />, roles: ['MANAGER'] },
   { key: '/accounts', label: 'Tài khoản', icon: <TeamOutlined />, roles: ['MANAGER'] },
 ];

@@ -49,7 +49,7 @@ const shortcuts: Shortcut[] = [
   { title: 'Đơn hàng', icon: <ShoppingCartOutlined /> },
   { title: 'Đồ uống', icon: <CoffeeOutlined /> },
   { title: 'Nhân viên', icon: <UserSwitchOutlined />, roles: ['MANAGER'] },
-  { title: 'Báo cáo', icon: <BarChartOutlined />, roles: ['MANAGER'] },
+  { title: 'Báo cáo', icon: <BarChartOutlined />, path: '/reports', roles: ['MANAGER'] },
 ];
 
 const reasonTag: Record<LowStockReason, { text: string; color: string }> = {
