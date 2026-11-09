@@ -7,6 +7,9 @@ import { prisma } from '../src/lib/prisma.js';
 export const api = () => request(app);
 
 export async function resetDb() {
+  await prisma.attendance.deleteMany();
+  await prisma.shift.deleteMany();
+  await prisma.employee.deleteMany();
   await prisma.order.deleteMany();
   await prisma.diningTable.deleteMany();
   await prisma.stockOutAllocation.deleteMany();

@@ -33,6 +33,7 @@ model Account {
   prepBatches        PrepBatch[]
   stockCounts        StockCount[]
   orders             Order[]
+  employee           Employee?
 }
 
 model LoginLog {
@@ -551,4 +552,65 @@ model OrderItemTopping {
 
   @@unique([orderItemId, toppingId])
   @@index([toppingId])
+}
+
+// ---------- Nhân viên, ca làm, chấm công ----------
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum EmployeeStatus {
+  WORKING
+  RESIGNED
+}
+
+model Employee {
+  id          Int            @id @default(autoincrement())
+  code        String         @unique
+  fullName    String
+  gender      Gender
+  position    String
+  phone       String?
+  address     String?
+  hireDate    DateTime       @db.Date
+  status      EmployeeStatus @default(WORKING)
+  accountId   Int?           @unique
+  account     Account?       @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  attendances Attendance[]
+
+  @@index([fullName])
+}
+
+model Shift {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  startTime   String // "HH:mm"
+  endTime     String // "HH:mm"; nhỏ hơn startTime là ca qua đêm
+  pay         Int // tiền một ca, VND
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  attendances Attendance[]
+}
+
+model Attendance {
+  id          Int      @id @default(autoincrement())
+  employeeId  Int
+  employee    Employee @relation(fields: [employeeId], references: [id])
+  shiftId     Int
+  shift       Shift    @relation(fields: [shiftId], references: [id])
+  workDate    DateTime @db.Date
+  payAmount   Int // chốt = Shift.pay lúc chấm công
+  note        String?
+  createdById Int?
+  createdAt   DateTime @default(now())
+
+  @@unique([employeeId, shiftId, workDate])
+  @@index([workDate])
+  @@index([employeeId, workDate])
 }
