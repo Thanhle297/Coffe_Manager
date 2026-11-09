@@ -97,12 +97,13 @@ export async function updateCustomer(id: number, input: UpdateCustomerInput) {
   }
 }
 
-/**
- * Chưa có module Order nên xóa hẳn (PointLog xóa theo). Khi có Order:
- * khách đã có hóa đơn chỉ được đặt isActive = false.
- */
+/** Khách đã có hóa đơn chỉ đặt isActive = false; chưa có thì xóa hẳn (PointLog xóa theo). */
 export async function removeCustomer(id: number) {
   await getOrThrow(prisma, id);
+  if ((await prisma.order.count({ where: { customerId: id } })) > 0) {
+    await prisma.customer.update({ where: { id }, data: { isActive: false } });
+    return;
+  }
   await prisma.customer.delete({ where: { id } });
 }
 

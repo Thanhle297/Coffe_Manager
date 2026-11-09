@@ -20,8 +20,8 @@ export async function withCodeRetry<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-/** PN: phiếu nhập, PX: phiếu xuất, SC: phiếu sơ chế, KK: phiếu kiểm kê. */
-export type CodeKind = 'PN' | 'PX' | 'SC' | 'KK';
+/** PN: phiếu nhập, PX: phiếu xuất, SC: phiếu sơ chế, KK: phiếu kiểm kê, HD: hóa đơn bán hàng. */
+export type CodeKind = 'PN' | 'PX' | 'SC' | 'KK' | 'HD';
 
 /** Sinh mã dạng `PN-YYYYMMDD-0001` theo ngày giờ Việt Nam. */
 export async function nextCode(tx: Tx, kind: CodeKind): Promise<string> {
@@ -34,7 +34,9 @@ export async function nextCode(tx: Tx, kind: CodeKind): Promise<string> {
         ? await tx.stockOut.findFirst(args)
         : kind === 'SC'
           ? await tx.prepBatch.findFirst(args)
-          : await tx.stockCount.findFirst(args);
+          : kind === 'KK'
+            ? await tx.stockCount.findFirst(args)
+            : await tx.order.findFirst(args);
   const seq = last ? Number(last.code.slice(prefix.length)) + 1 : 1;
   return `${prefix}${String(seq).padStart(4, '0')}`;
 }

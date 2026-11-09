@@ -11,11 +11,13 @@ import { drinkRoutes } from './modules/drink/drink.routes.js';
 import { customerTypeRoutes } from './modules/customer-type/customerType.routes.js';
 import { ingredientCategoryRoutes } from './modules/ingredient-category/ingredientCategory.routes.js';
 import { ingredientRoutes } from './modules/ingredient/ingredient.routes.js';
+import { orderRoutes } from './modules/order/order.routes.js';
 import { loyaltyRoutes } from './modules/loyalty/loyalty.routes.js';
 import { prepRoutes } from './modules/prep/prep.routes.js';
 import { stockCountRoutes } from './modules/stock-count/stockCount.routes.js';
 import { stockInRoutes, stockOutRoutes } from './modules/stock/stock.routes.js';
 import { supplierRoutes } from './modules/supplier/supplier.routes.js';
+import { tableRoutes } from './modules/table/table.routes.js';
 import { toppingRoutes } from './modules/topping/topping.routes.js';
 import { UPLOAD_ROOT } from './middlewares/upload.js';
 
@@ -48,5 +50,7 @@ app.use('/stock-counts', stockCountRoutes);
 app.use('/drink-categories', drinkCategoryRoutes);
 app.use('/drinks', drinkRoutes);
 app.use('/toppings', toppingRoutes);
+app.use('/tables', tableRoutes);
+app.use('/orders', orderRoutes);
 
 app.use(errorHandler);

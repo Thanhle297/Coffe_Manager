@@ -22,6 +22,10 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   ContactsOutlined,
+  ShoppingCartOutlined,
+  TableOutlined,
+  FileTextOutlined,
+  SettingOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
@@ -42,6 +46,16 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { key: '/', label: 'Trang chủ', icon: <HomeOutlined /> },
+  {
+    key: 'sales',
+    label: 'Bán hàng',
+    icon: <ShoppingCartOutlined />,
+    children: [
+      { key: '/tables', label: 'Sơ đồ bàn', icon: <TableOutlined /> },
+      { key: '/orders', label: 'Hóa đơn', icon: <FileTextOutlined /> },
+      { key: '/tables/manage', label: 'Quản lý bàn', icon: <SettingOutlined />, roles: ['MANAGER'] },
+    ],
+  },
   { key: '/customers', label: 'Khách hàng', icon: <ContactsOutlined /> },
   {
     key: 'menu',
@@ -73,6 +87,9 @@ const navItems: NavItem[] = [
 
 const pageTitles: Record<string, string> = {
   '/': 'Trang chủ',
+  '/tables': 'Sơ đồ bàn',
+  '/tables/manage': 'Quản lý bàn',
+  '/orders': 'Hóa đơn',
   '/customers': 'Khách hàng',
   '/drinks': 'Đồ uống',
   '/toppings': 'Topping',
@@ -128,7 +145,9 @@ export function AppLayout() {
           key,
           icon,
           label: key === 'inventory' ? withBadge(label) : label,
-          children: children?.map((c) => ({
+          children: children
+            ?.filter((c) => !c.roles || c.roles.includes(user.role))
+            .map((c) => ({
             key: c.key,
             icon: c.icon,
             label: c.key === '/ingredients' ? withBadge(c.label) : c.label,
@@ -155,6 +174,8 @@ export function AppLayout() {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         width={232}
+        className="app-sider"
+        style={{ position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}
       >
         <Flex
           align="center"
@@ -195,7 +216,7 @@ export function AppLayout() {
           theme="dark"
           mode="inline"
           selectedKeys={[pathname]}
-          defaultOpenKeys={['inventory']}
+          defaultOpenKeys={['sales', 'inventory']}
           items={menuItems}
           onClick={({ key }) => navigate(key)}
         />
@@ -219,7 +240,7 @@ export function AppLayout() {
               style={{ fontSize: 18, color: colors.brown }}
             />
             <Typography.Text strong style={{ fontSize: 18, color: colors.espresso }}>
-              {pageTitles[pathname] ?? ''}
+              {pageTitles[pathname] ?? (pathname.startsWith('/orders/') ? 'Gọi món' : '')}
             </Typography.Text>
           </Flex>
           <Dropdown menu={{ items: userMenu, onClick: onUserMenuClick }} trigger={['click']}>

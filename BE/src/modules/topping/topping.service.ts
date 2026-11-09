@@ -126,9 +126,12 @@ export async function setToppingAvailability(id: number, isAvailable: boolean, r
 
 /**
  * Xóa topping. Đã có trong hóa đơn thì chỉ gỡ (isActive=false, isAvailable=false).
- * TODO(Order): đếm OrderItemTopping để chọn xóa mềm; hiện chưa có hóa đơn nên luôn xóa cứng.
  */
 export async function removeTopping(id: number) {
   await getOrThrow(id);
+  if ((await prisma.orderItemTopping.count({ where: { toppingId: id } })) > 0) {
+    await prisma.topping.update({ where: { id }, data: { isActive: false, isAvailable: false } });
+    return;
+  }
   await prisma.topping.delete({ where: { id } });
 }

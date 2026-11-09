@@ -236,10 +236,23 @@ async function seedDrinks() {
   console.log(`Đã tạo ${DRINK_CATEGORIES.length} danh mục, 1 topping và ${DRINKS.length} đồ uống mẫu.`);
 }
 
+/** Bàn mẫu: Bàn 1..10. */
+async function seedTables() {
+  for (let i = 1; i <= 10; i++) {
+    await prisma.diningTable.upsert({
+      where: { name: `Bàn ${i}` },
+      update: {},
+      create: { name: `Bàn ${i}`, floor: i <= 6 ? 1 : 2, seats: i <= 6 ? 4 : 2, sortOrder: i },
+    });
+  }
+  console.log('Đã có 10 bàn mẫu.');
+}
+
 async function main() {
   await seedLoyalty();
   await seedInventory();
   await seedDrinks();
+  await seedTables();
 
   const existing = await prisma.account.count({ where: { role: Role.MANAGER } });
   if (existing > 0) {
