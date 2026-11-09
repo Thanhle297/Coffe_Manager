@@ -17,6 +17,7 @@ import { ingredientRoutes } from './modules/ingredient/ingredient.routes.js';
 import { orderRoutes } from './modules/order/order.routes.js';
 import { loyaltyRoutes } from './modules/loyalty/loyalty.routes.js';
 import { prepRoutes } from './modules/prep/prep.routes.js';
+import { reportRoutes } from './modules/report/report.routes.js';
 import { stockCountRoutes } from './modules/stock-count/stockCount.routes.js';
 import { stockInRoutes, stockOutRoutes } from './modules/stock/stock.routes.js';
 import { supplierRoutes } from './modules/supplier/supplier.routes.js';
@@ -59,5 +60,6 @@ app.use('/employees', employeeRoutes);
 app.use('/shifts', shiftRoutes);
 app.use('/attendances', attendanceRoutes);
 app.use('/payrolls', payrollRoutes);
+app.use('/reports', reportRoutes);
 
 app.use(errorHandler);
