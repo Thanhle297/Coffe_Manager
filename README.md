@@ -14,7 +14,6 @@ Hệ thống quản lý quán cà phê trên nền web: bán hàng, thực đơn
 
 ## Mục lục
 
-- [Tính năng](#tính-năng)
 - [Công nghệ](#công-nghệ)
 - [Cấu trúc thư mục](#cấu-trúc-thư-mục)
 - [Cài đặt và chạy](#cài-đặt-và-chạy)
@@ -22,18 +21,6 @@ Hệ thống quản lý quán cà phê trên nền web: bán hàng, thực đơn
 - [Kiến trúc](#kiến-trúc)
 - [Quy tắc nghiệp vụ chính](#quy-tắc-nghiệp-vụ-chính)
 - [Tài liệu](#tài-liệu)
-
-## Tính năng
-
-| Module                                | Mô tả                                                                                                                                 | Trạng thái          |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| **Xác thực & tài khoản**    | Đăng nhập JWT, phân quyền `MANAGER` / `STAFF`, khóa tài khoản, quản lý đặt lại mật khẩu, bắt buộc đổi mật khẩu | ✅ Hoàn thành       |
-| **Khách hàng & tích điểm** | Hồ sơ khách hàng, hạng thành viên, tích và đổi điểm                                                                        | ✅ Hoàn thành       |
-| **Kho nguyên liệu**           | Nguyên liệu, nhà cung cấp, lô hàng (xuất theo FEFO), nhập/xuất kho, mẻ pha chế, kiểm kê                                    | ✅ Hoàn thành       |
-| **Đồ uống & công thức**    | Thực đơn, công thức (định lượng nguyên liệu cho từng món)                                                                  | 🚧 Đang phát triển |
-| **Gọi món & thanh toán**     | Bàn, đơn hàng, hóa đơn, tự động trừ kho theo công thức                                                                     | 🚧 Đang phát triển |
-| **Nhân viên**                 | Hồ sơ nhân viên, ca làm việc                                                                                                      | 🚧 Đang phát triển |
-| **Báo cáo**                   | Doanh thu, lợi nhuận tính theo giá vốn công thức, biểu đồ                                                                     | 🚧 Đang phát triển |
 
 ## Công nghệ
 
@@ -81,48 +68,192 @@ Coffe_Manager/
 
 ## Cài đặt và chạy
 
-### Yêu cầu
+Hướng dẫn dưới đây giúp chạy dự án trên máy cá nhân (Windows, macOS hoặc Linux) từ đầu, kể cả khi máy chưa cài gì.
 
-- Node.js 20 trở lên và npm
-- Docker và Docker Compose (hoặc PostgreSQL 16 cài sẵn)
+### Bước 0. Cài các công cụ cần thiết
 
-### 1. Clone dự án
+| Công cụ                                                        | Phiên bản                                     | Ghi chú                                                                                                                   |
+| ---------------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| [Git](https://git-scm.com/downloads)                              | bất kỳ                                        | Để clone mã nguồn                                                                                                      |
+| [Node.js](https://nodejs.org/)                                    | **20 trở lên** (khuyên dùng bản LTS) | Cài kèm `npm`                                                                                                          |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | bất kỳ                                        | Để chạy PostgreSQL. Có thể thay bằng PostgreSQL 16 cài trực tiếp (xem [Không dùng Docker](#không-dùng-docker)) |
+
+Kiểm tra đã cài đúng chưa:
+
+```bash
+git --version
+node -v          # phải là v20.x trở lên
+npm -v
+docker --version
+docker compose version
+```
+
+> Trên Windows, mở **Docker Desktop** và đợi nó báo "Engine running" trước khi chạy các lệnh `docker`.
+
+### Bước 1. Clone mã nguồn
 
 ```bash
 git clone https://github.com/Thanhle297/Coffe_Manager.git
 cd Coffe_Manager
 ```
 
-### 2. Khởi động cơ sở dữ liệu
+Mọi lệnh bên dưới đều giả định bạn đang đứng ở thư mục gốc `Coffe_Manager/` trừ khi có ghi `cd` vào thư mục khác.
+
+### Bước 2. Khởi động cơ sở dữ liệu PostgreSQL
 
 ```bash
 docker compose up -d
 ```
 
-PostgreSQL chạy tại `localhost:5432` với user/password/database là `coffee` / `coffee` / `coffee_manager`.
+Lệnh này tải image `postgres:16` (lần đầu hơi lâu) và chạy database ở chế độ nền:
 
-### 3. Backend
+- Địa chỉ: `localhost:5432`
+- User / Password / Database: `coffee` / `coffee` / `coffee_manager`
+- Dữ liệu được lưu trong volume `pgdata`, tắt máy bật lại vẫn còn.
+
+Kiểm tra container đang chạy:
+
+```bash
+docker compose ps        # cột STATUS phải là "running" / "Up"
+```
+
+### Bước 3. Cài đặt và chạy Backend (API)
+
+Mở một cửa sổ terminal **mới** và chạy:
 
 ```bash
 cd BE
-cp .env.example .env        # chỉnh JWT_SECRET và tài khoản quản lý mặc định nếu cần
-npm install
-npm run prisma:generate     # sinh Prisma Client
-npm run prisma:migrate      # tạo bảng
-npm run prisma:seed         # tạo tài khoản Quản lý đầu tiên
-npm run dev                 # http://localhost:3000 (GET /health để kiểm tra)
 ```
 
-Tài khoản quản lý mặc định lấy từ `SEED_MANAGER_USERNAME` / `SEED_MANAGER_PASSWORD` trong `.env` (mặc định `admin` / `Admin@12345`). Hãy đổi mật khẩu sau lần đăng nhập đầu tiên.
+**3.1. Tạo file cấu hình `.env`** từ file mẫu:
 
-### 4. Frontend
+```bash
+# macOS / Linux / Git Bash
+cp .env.example .env
+
+# Windows PowerShell
+Copy-Item .env.example .env
+
+# Windows CMD
+copy .env.example .env
+```
+
+Nội dung `.env` mặc định đã khớp với database ở Bước 2, có thể dùng ngay:
+
+| Biến                     | Mặc định                                                  | Ý nghĩa                                                 |
+| ------------------------- | ------------------------------------------------------------ | --------------------------------------------------------- |
+| `PORT`                  | `3000`                                                     | Cổng chạy API                                           |
+| `DATABASE_URL`          | `postgresql://coffee:coffee@localhost:5432/coffee_manager` | Chuỗi kết nối PostgreSQL                               |
+| `JWT_SECRET`            | `change-me`                                                | Khóa ký JWT, nên đổi thành chuỗi ngẫu nhiên dài |
+| `JWT_EXPIRES_IN`        | `1d`                                                       | Thời hạn token đăng nhập                             |
+| `CORS_ORIGIN`           | `http://localhost:5173`                                    | Địa chỉ Frontend được phép gọi API                |
+| `SEED_MANAGER_USERNAME` | `admin`                                                    | Tên đăng nhập Quản lý đầu tiên                   |
+| `SEED_MANAGER_PASSWORD` | `Admin@12345`                                              | Mật khẩu Quản lý đầu tiên                          |
+
+**3.2. Cài thư viện:**
+
+```bash
+npm install
+```
+
+**3.3. Sinh Prisma Client** (thư mục `src/generated/prisma` không có sẵn trong git, bắt buộc phải chạy):
+
+```bash
+npm run prisma:generate
+```
+
+**3.4. Tạo bảng trong database** (áp dụng các migration):
+
+```bash
+npm run prisma:migrate
+```
+
+Nếu được hỏi đặt tên migration thì chỉ cần nhấn Enter (thường sẽ không hỏi vì schema đã khớp migration).
+
+**3.5. Nạp dữ liệu mẫu:**
+
+```bash
+npm run prisma:seed
+```
+
+Lệnh này tạo: tài khoản Quản lý, hạng thành viên, nguyên liệu, nhà cung cấp, lô hàng, đồ uống kèm công thức, 10 bàn, 3 ca làm và 3 nhân viên mẫu. Có thể chạy lại nhiều lần mà không bị trùng dữ liệu.
+
+**3.6. Chạy API:**
+
+```bash
+npm run dev
+```
+
+Mở trình duyệt vào [http://localhost:3000/health](http://localhost:3000/health), nếu thấy phản hồi JSON nghĩa là Backend đã chạy. **Giữ nguyên cửa sổ terminal này.**
+
+### Bước 4. Cài đặt và chạy Frontend (giao diện web)
+
+Mở thêm một cửa sổ terminal **mới** khác (Backend vẫn đang chạy ở terminal cũ), từ thư mục gốc dự án:
 
 ```bash
 cd FE
-cp .env.example .env        # VITE_API_URL=http://localhost:3000
+cp .env.example .env        # Windows PowerShell: Copy-Item .env.example .env
 npm install
-npm run dev                 # http://localhost:5173
+npm run dev
 ```
+
+File `.env` của Frontend chỉ có một biến `VITE_API_URL=http://localhost:3000` (địa chỉ Backend). Nếu đổi `PORT` ở Backend thì sửa biến này cho khớp.
+
+### Bước 5. Đăng nhập
+
+Mở [http://localhost:5173](http://localhost:5173) và đăng nhập bằng tài khoản Quản lý mặc định:
+
+- Tên đăng nhập: `admin`
+- Mật khẩu: `Admin@12345`
+
+(hoặc giá trị `SEED_MANAGER_USERNAME` / `SEED_MANAGER_PASSWORD` bạn đã đặt trong `BE/.env`). Nên đổi mật khẩu sau lần đăng nhập đầu tiên. Tài khoản Nhân viên (`STAFF`) do Quản lý tạo trong ứng dụng.
+
+### Những lần chạy sau
+
+Không cần cài lại, chỉ cần 3 bước:
+
+```bash
+docker compose up -d              # ở thư mục gốc
+cd BE && npm run dev              # terminal 1
+cd FE && npm run dev              # terminal 2
+```
+
+Sau khi `git pull` code mới, chạy thêm trong `BE/`: `npm install`, `npm run prisma:generate`, `npm run prisma:migrate` (và `npm install` trong `FE/`) để cập nhật thư viện và cấu trúc database.
+
+Tắt database khi không dùng: `docker compose down` (dữ liệu vẫn giữ). Muốn **xóa sạch dữ liệu** để làm lại từ đầu: `docker compose down -v`, sau đó chạy lại Bước 2 và các bước 3.4, 3.5.
+
+### Không dùng Docker
+
+Nếu đã cài sẵn PostgreSQL 16, tạo user và database tương ứng (hoặc dùng user có sẵn) rồi sửa `DATABASE_URL` trong `BE/.env`:
+
+```sql
+CREATE USER coffee WITH PASSWORD 'coffee' CREATEDB;
+CREATE DATABASE coffee_manager OWNER coffee;
+```
+
+Quyền `CREATEDB` cần cho `prisma migrate dev` (tạo shadow database) và cho kiểm thử (tự tạo database `coffee_manager_test`). Sau đó làm tiếp từ Bước 3.
+
+### Chạy kiểm thử (tùy chọn)
+
+```bash
+cd BE
+npm test
+```
+
+Kiểm thử dùng database riêng `coffee_manager_test` (tự tạo và tự migrate), không ảnh hưởng dữ liệu chính. Cần database ở Bước 2 đang chạy.
+
+### Lỗi thường gặp
+
+| Hiện tượng                                         | Nguyên nhân và cách xử lý                                                                                                                                                                 |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Cannot find module '.../generated/prisma/...'`     | Chưa sinh Prisma Client: chạy `npm run prisma:generate` trong `BE/`                                                                                                                       |
+| `Can't reach database server at localhost:5432`     | Database chưa chạy: mở Docker Desktop, chạy `docker compose up -d`, kiểm tra `docker compose ps`                                                                                       |
+| `port is already allocated` / cổng 5432 bị chiếm | Máy đã có PostgreSQL khác chạy ở 5432: tắt nó đi, hoặc đổi `"5432:5432"` thành `"5433:5432"` trong `docker-compose.yml` và sửa `DATABASE_URL` thành `localhost:5433` |
+| `EADDRINUSE: address already in use :::3000`        | Cổng 3000 bị chiếm: đổi `PORT` trong `BE/.env` và `VITE_API_URL` trong `FE/.env` cho khớp                                                                                        |
+| Frontend báo lỗi mạng / CORS khi đăng nhập      | Backend chưa chạy, hoặc `VITE_API_URL` (FE) và `CORS_ORIGIN` (BE) không khớp địa chỉ thực tế. Sửa `.env` xong phải khởi động lại `npm run dev`                         |
+| Đăng nhập báo sai mật khẩu với `admin`       | Chưa chạy `npm run prisma:seed`, hoặc đã đổi mật khẩu trước đó. Seed sẽ bỏ qua nếu đã có tài khoản Quản lý                                                             |
+| Lệnh `cp` không chạy trên Windows               | Dùng `Copy-Item` (PowerShell) hoặc `copy` (CMD), hoặc chạy trong Git Bash                                                                                                               |
+| Lỗi sau khi `git pull`                             | Chạy lại `npm install`, `npm run prisma:generate`, `npm run prisma:migrate` trong `BE/` và `npm install` trong `FE/`                                                             |
 
 ## Các lệnh thường dùng
 
